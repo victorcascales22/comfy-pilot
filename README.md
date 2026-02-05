@@ -8,6 +8,9 @@ Talk to Claude, Ollama, Gemini, or other AI agents directly in ComfyUI. Describe
 ![Python](https://img.shields.io/badge/python-3.10+-blue.svg)
 ![ComfyUI](https://img.shields.io/badge/ComfyUI-compatible-green.svg)
 ![Status](https://img.shields.io/badge/status-alpha-orange.svg)
+[![GitHub stars](https://img.shields.io/github/stars/AdamPerlinski/comfy-pilot?style=social)](https://github.com/AdamPerlinski/comfy-pilot/stargazers)
+
+> 💡 **Like this project?** Give it a ⭐ star and 👁️ watch to stay updated with new features!
 
 > ⚠️ **ALPHA VERSION** — This project is in early development. Use at your own risk. The author is not responsible for any API costs, token usage, or other expenses incurred while using this software.
 
@@ -533,12 +536,3 @@ Built with:
 - [Claude Code](https://claude.ai)
 - [Aider](https://aider.chat)
 
----
-
-## ⭐ Star History
-
-If you find this useful, please star the repo!
-
-```
-            ⭐ Star comfy-pilot on GitHub ⭐
-```
