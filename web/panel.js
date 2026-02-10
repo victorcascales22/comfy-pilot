@@ -20,6 +20,8 @@ class ComfyPilotPanel {
     this.knowledgeCategories = null; // null = all enabled
     this.contextOptionsOpen = false;
 
+    this.lastDetectedWorkflow = null;
+
     this.container = null;
     this.messagesContainer = null;
     this.inputField = null;
@@ -132,6 +134,12 @@ class ComfyPilotPanel {
         </label>
         <span class="workflow-status"></span>
       </div>
+      <div class="cp-persistent-actions" style="display:none">
+        <span class="cp-detected-label">Workflow detected</span>
+        <button class="cp-btn-validate">Validate</button>
+        <button class="cp-btn-apply">Apply</button>
+        <button class="cp-btn-log">Log</button>
+      </div>
       <div class="cp-input-area">
         <textarea
           class="cp-input"
@@ -205,6 +213,56 @@ class ComfyPilotPanel {
       this.contextMode = e.target.value;
       localStorage.setItem("comfy-pilot-context-mode", this.contextMode);
       this.container.querySelector(".cp-context-mode-badge").textContent = this.contextMode;
+    });
+
+    // Persistent actions bar
+    const persistentBar = this.container.querySelector(".cp-persistent-actions");
+    persistentBar.querySelector(".cp-btn-validate").addEventListener("click", async () => {
+      if (!this.lastDetectedWorkflow) return;
+      await this.validateWorkflowUI(this.lastDetectedWorkflow, persistentBar);
+    });
+    persistentBar.querySelector(".cp-btn-apply").addEventListener("click", async () => {
+      if (!this.lastDetectedWorkflow) return;
+      const btn = persistentBar.querySelector(".cp-btn-apply");
+      btn.textContent = "Validating...";
+      btn.disabled = true;
+      try {
+        // Validate first
+        const valResponse = await api.fetchApi("/comfy-pilot/validate-workflow", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ workflow: this.lastDetectedWorkflow }),
+        });
+        const valResult = await valResponse.json();
+        if (!valResult.valid) {
+          btn.textContent = "Invalid!";
+          btn.style.background = "var(--cp-danger)";
+          await this.validateWorkflowUI(this.lastDetectedWorkflow, persistentBar);
+          setTimeout(() => { btn.textContent = "Apply"; btn.style.background = ""; btn.disabled = false; }, 2000);
+          return;
+        }
+        // Apply
+        btn.textContent = "Applying...";
+        await this.applyWorkflow(this.lastDetectedWorkflow);
+        btn.textContent = "Applied!";
+        btn.style.background = "var(--cp-success)";
+      } catch (e) {
+        btn.textContent = "Failed";
+        btn.style.background = "var(--cp-danger)";
+      }
+      setTimeout(() => {
+        btn.textContent = "Apply";
+        btn.style.background = "";
+        btn.disabled = false;
+      }, 2000);
+    });
+    persistentBar.querySelector(".cp-btn-log").addEventListener("click", () => {
+      if (!this.lastDetectedWorkflow) return;
+      console.log("[comfy-pilot] Workflow JSON:", this.lastDetectedWorkflow);
+      console.log("[comfy-pilot] Workflow (formatted):", JSON.stringify(this.lastDetectedWorkflow, null, 2));
+      const btn = persistentBar.querySelector(".cp-btn-log");
+      btn.textContent = "Logged!";
+      setTimeout(() => { btn.textContent = "Log"; }, 1500);
     });
 
     document.body.appendChild(this.container);
@@ -457,6 +515,34 @@ class ComfyPilotPanel {
       .cp-toggle input { cursor: pointer; }
       .cp-toggle:hover { color: var(--cp-text); }
       .workflow-status { font-size: 11px; color: var(--cp-text-dim); }
+
+      /* Persistent actions bar */
+      .cp-persistent-actions {
+        display: flex;
+        align-items: center;
+        padding: 6px 12px;
+        gap: 6px;
+        border-top: 1px solid var(--cp-border);
+        background: var(--cp-bg-secondary);
+      }
+      .cp-persistent-actions .cp-detected-label {
+        font-size: 11px;
+        color: var(--cp-text-dim);
+        flex: 1;
+      }
+      .cp-persistent-actions button {
+        border: none;
+        padding: 4px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 11px;
+        font-weight: 500;
+        color: white;
+      }
+      .cp-persistent-actions button:hover { opacity: 0.9; }
+      .cp-persistent-actions .cp-btn-validate { background: #6c757d; }
+      .cp-persistent-actions .cp-btn-apply { background: var(--cp-accent); }
+      .cp-persistent-actions .cp-btn-log { background: #6c757d; }
 
       /* Input */
       .cp-input-area {
@@ -841,6 +927,11 @@ class ComfyPilotPanel {
   resetChat() {
     this.messages = [];
     this.messagesContainer.innerHTML = "";
+    this.includeWorkflow = false;
+    this.workflowToggle.checked = false;
+    this.updateWorkflowStatus();
+    this.lastDetectedWorkflow = null;
+    this.updatePersistentActions();
     this.addMessage("assistant", "Chat reset! How can I help you with ComfyUI today?");
   }
 
@@ -882,8 +973,12 @@ class ComfyPilotPanel {
       }
 
       if (this.includeWorkflow) {
-        const workflow = this.getCurrentWorkflow();
-        if (workflow) payload.current_workflow = workflow;
+        try {
+          const workflow = this.getCurrentWorkflow();
+          if (workflow) payload.current_workflow = workflow;
+        } catch (e) {
+          console.warn("[comfy-pilot] Failed to get workflow for context:", e);
+        }
       }
 
       const response = await api.fetchApi("/comfy-pilot/chat", {
@@ -1028,55 +1123,36 @@ class ComfyPilotPanel {
     );
     if (!hasNodes) return;
 
-    const actionsDiv = document.createElement("div");
-    actionsDiv.className = "cp-workflow-actions";
-    actionsDiv.innerHTML = `
-      <button class="cp-btn-validate">Validate</button>
-      <button class="cp-btn-apply">Apply Workflow</button>
-      <button class="cp-btn-log">Log to Console</button>
-    `;
+    // Track the last detected workflow for the persistent bar
+    this.lastDetectedWorkflow = workflow;
+    this.updatePersistentActions();
 
-    // Validate button
-    actionsDiv.querySelector(".cp-btn-validate").addEventListener("click", async () => {
-      await this.validateWorkflowUI(workflow, actionsDiv);
-    });
+    // Inline marker on the message
+    const marker = document.createElement("div");
+    marker.className = "cp-workflow-actions";
+    marker.innerHTML = `<span style="font-size:11px;color:var(--cp-text-dim)">Workflow detected (${Object.keys(workflow).length} nodes) - use buttons below to validate/apply</span>`;
+    messageEl.appendChild(marker);
+  }
 
-    // Apply button
-    actionsDiv.querySelector(".cp-btn-apply").addEventListener("click", async () => {
-      const btn = actionsDiv.querySelector(".cp-btn-apply");
-      btn.textContent = "Applying...";
-      btn.disabled = true;
-      try {
-        await this.applyWorkflow(workflow);
-        btn.textContent = "Applied!";
-        btn.style.background = "var(--cp-success)";
-      } catch (e) {
-        btn.textContent = "Failed";
-        btn.style.background = "var(--cp-danger)";
-      }
-      setTimeout(() => {
-        btn.textContent = "Apply Workflow";
-        btn.style.background = "";
-        btn.disabled = false;
-      }, 2000);
-    });
-
-    // Log button
-    actionsDiv.querySelector(".cp-btn-log").addEventListener("click", () => {
-      console.log("[comfy-pilot] Workflow JSON:", workflow);
-      console.log("[comfy-pilot] Workflow (formatted):", JSON.stringify(workflow, null, 2));
-      const btn = actionsDiv.querySelector(".cp-btn-log");
-      btn.textContent = "Logged!";
-      setTimeout(() => { btn.textContent = "Log to Console"; }, 1500);
-    });
-
-    messageEl.appendChild(actionsDiv);
+  updatePersistentActions() {
+    const bar = this.container.querySelector(".cp-persistent-actions");
+    if (!bar) return;
+    if (this.lastDetectedWorkflow) {
+      const count = Object.keys(this.lastDetectedWorkflow).length;
+      bar.style.display = "flex";
+      bar.querySelector(".cp-detected-label").textContent = `Workflow detected (${count} nodes)`;
+      // Remove old validation results
+      const oldResult = bar.parentElement.querySelector(".cp-persistent-actions + .cp-validation-result");
+      if (oldResult) oldResult.remove();
+    } else {
+      bar.style.display = "none";
+    }
   }
 
   async validateWorkflowUI(workflow, container) {
-    // Remove existing validation result
-    const existing = container.parentElement.querySelector(".cp-validation-result");
-    if (existing) existing.remove();
+    // Remove existing validation results near this container
+    const parent = container.parentElement || container;
+    parent.querySelectorAll(".cp-validation-result").forEach((el) => el.remove());
 
     try {
       const response = await api.fetchApi("/comfy-pilot/validate-workflow", {
@@ -1122,7 +1198,7 @@ class ComfyPilotPanel {
         resultDiv.appendChild(fixBtn);
       }
 
-      container.parentElement.appendChild(resultDiv);
+      (parent || container).appendChild(resultDiv);
     } catch (e) {
       console.error("Validation failed:", e);
     }
