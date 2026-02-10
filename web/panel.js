@@ -482,7 +482,17 @@ class ComfyPilotPanel {
       .cp-btn-apply { background: var(--cp-accent); }
       .cp-btn-validate { background: #6c757d; }
       .cp-btn-log { background: #6c757d; }
-      .cp-btn-fix { background: var(--cp-warning); color: #000; }
+      .cp-btn-fix {
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 4px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 11px;
+        font-weight: 500;
+      }
+      .cp-btn-fix:hover { opacity: 0.9; }
 
       /* Validation result */
       .cp-validation-result {
@@ -1200,6 +1210,9 @@ class ComfyPilotPanel {
     // Track the last detected workflow for the persistent bar
     this.lastDetectedWorkflow = workflow;
     this.updatePersistentActions();
+
+    // Clear old validation results everywhere (stale from previous workflow)
+    this.container.querySelectorAll(".cp-validation-result").forEach((el) => el.remove());
 
     // Inline marker on the message
     const marker = document.createElement("div");
