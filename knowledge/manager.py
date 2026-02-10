@@ -217,9 +217,10 @@ class KnowledgeManager:
 
         # Agent-specific defaults
         if agent_name == "ollama":
-            # Estimate model size from name
-            size_indicators = {"1b": 8000, "3b": 8000, "7b": 8000, "8b": 8000,
-                             "13b": 12000, "14b": 12000, "32b": 15000, "70b": 20000}
+            # Estimate model size from name (check longest patterns first to
+            # avoid "3b" matching inside "13b")
+            size_indicators = {"70b": 20000, "32b": 15000, "14b": 12000, "13b": 12000,
+                             "8b": 8000, "7b": 8000, "3b": 8000, "1b": 8000}
             model_lower = model_name.lower()
             for indicator, budget in size_indicators.items():
                 if indicator in model_lower:
